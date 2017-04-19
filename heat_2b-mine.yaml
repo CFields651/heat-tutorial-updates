@@ -1,0 +1,113 @@
+heat_template_version: 2013-05-23
+ 
+description: Simple template to deploy a single compute instance
+ 
+parameters:
+  image:
+    type: string
+    label: Image name or ID
+    description: Image to be used for compute instance
+    default: cirros-0.3.3-x86_64
+  flavor:
+    type: string
+    label: Flavor
+    description: Type of instance (flavor) to be used
+    default: m1.small
+  key:
+    type: string
+    label: Key name
+    description: Name of key-pair to be used for compute instance
+    default: my_key
+  external_network_name:
+    type: string
+    description: external floating ip network
+
+ 
+resources:
+  heat_network_01: 
+    type: OS::Neutron::Net 
+    properties: 
+      admin_state_up: true 
+      name: 
+        list_join: 
+          - "-" 
+          - [ { get_param: "OS::stack_name" }, "network-1" ] 
+
+  heat_subnet_01: 
+    type: OS::Neutron::Subnet 
+    properties: 
+      name: 
+        list_join: 
+          - "-" 
+          - [ { get_param: "OS::stack_name" }, "subnet-1" ] 
+      cidr: 10.0.10.0/24 
+      dns_nameservers: 
+        - 10.97.40.215 
+        - 10.64.40.215 
+      enable_dhcp: true 
+      network_id: { get_resource: heat_network_01 } 
+
+  heat_router_01: 
+    type: OS::Neutron::Router 
+    properties: 
+      external_gateway_info: 
+        network: { get_param: external_network_name } 
+      admin_state_up: true 
+      name: 
+        list_join: 
+          - "-"
+          - [ { get_param: "OS::stack_name" }, "router-1" ] 
+
+  heat_router_int0: 
+    type: OS::Neutron::RouterInterface 
+    properties: 
+      router_id: { get_resource: heat_router_01 } 
+      subnet_id: { get_resource: heat_subnet_01 } 
+
+  wait_condition:
+    type: OS::Heat::WaitCondition
+    properties:
+      handle: { get_resource: wait_handle }
+      count: 1
+      timeout: 300
+
+  wait_handle:
+    type: OS::Heat::WaitConditionHandle
+
+  my_instance:
+    type: OS::Nova::Server
+    properties:
+      image: { get_param: image }
+      flavor: { get_param: flavor }
+      key_name: { get_param: key }
+      networks:
+        - network: { get_resource: heat_network_01 }
+      user_data_format: RAW
+      user_data:
+        str_replace: 
+          params:
+            my_net: { get_param: external_network_name }
+            wc_notify: { get_attr: ['wait_handle', 'curl_cli'] }
+          template: | 
+            #!/bin/sh
+            echo "Connecting to my_net network"
+            sleep 60
+            wc_notify --data-binary '{"status": "SUCCESS"}' 
+
+  heat_floating_ip0: 
+    type: OS::Nova::FloatingIP 
+    properties: 
+     pool: { get_param: external_network_name } 
+  heat_floating_ip_assoc0_instance0: 
+    type: OS::Nova::FloatingIPAssociation 
+    properties: 
+      floating_ip: { get_resource: heat_floating_ip0 } 
+      server_id: { get_resource: my_instance } 
+
+outputs:
+  instance_name:
+    description: Name of the instance
+    value: { get_attr: [my_instance, name] }
+  instance_ip:
+    description: IP address of the instance
+    value: { get_attr: [my_instance, first_address] }

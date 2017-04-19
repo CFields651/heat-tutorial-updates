@@ -1,0 +1,41 @@
+Note: the 'heat' openstack client is deprecated so use the 'openstack stack' command line client:  
+Replace heat 'stack-create' with 'openstack stack create'
+Replace heat 'stack-show'   with 'openstack stack show'
+
+PART 1: https://developer.rackspace.com/blog/openstack-orchestration-in-depth-part-1-introduction-to-heat/
+
+heat_1a: 
+  change version to 'heat_template_version: 2014-10-16'
+  change resource attributes to:
+  image to 'cirros'
+  flavor to 'm1.tiny'
+  change network to 'demo<your tennat number>-private1-net'
+  to create:  openstack stack create -t heat_1a.yaml my_first_stack
+
+heat_1b:  
+  change version to 'heat_template_version: 2014-10-16'
+  change input parameters to:
+  image to 'cirros'
+  flavor to 'm1.tiny' 
+  remove 'default' from priviate_network 
+  to create: openstack stack create -t heat_1b.yaml second_stack --parameter private_network=demo09-private1-net
+
+PART 2: https://developer.rackspace.com/blog/openstack-orchestration-in-depth-part-2-single-instance-deployments/ 
+
+heat_2a.yaml
+  Rather than continuing to change the same default parameters let's create an input file:
+
+cat > my_input_params.yaml << EOF
+parameters:
+  key: my_key
+  image: cirros
+  flavor: m1.tiny
+EOF
+
+  to create: openstack stack create -t heat_2a.yaml second_stack -e my_input_params.yaml  --parameter private_network=demo09-private1-net
+
+  Skip 'A real deployment' 
+
+heat_2b-mine.yaml
+  to create: openstack stack create -t heat_2b-mine.yaml flasky --parameter "external_network_name=public" -e my_input_params.yaml
+
