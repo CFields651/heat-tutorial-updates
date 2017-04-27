@@ -39,3 +39,14 @@ EOF
 heat_2b-mine.yaml
   to create: openstack stack create -t heat_2b-mine.yaml flasky --parameter "external_network_name=public" -e my_input_params.yaml
 
+PART 3: https://github.com/CFields651/osp_lbaasv2_heat_demo
+
+my_tenant_lbaasv2_stdalone.yaml 
+  This template creates only a loadbalancer and its coresponding parts: listener, pool, members and health monitor.  It is intended to be a simples example for use in understanding how to do this with heat.  You need an existing private subnet and two instances with locak ip addresses on that subnet. 
+
+to create: openstack stack create -t  my_tenant_lbaasv2_stdalone.yaml stdalone_lbaasv2 --parameter "lb_subnet=[guid of existing subnet]" --parameter "member_ip1=[local ip of 1st instance]" --parameter "member_ip2=[local ip of 2nd instance]" 
+for example: openstack stack create -t  my_tenant_lbaasv2_stdalone.yaml stdalone_lbaasv2 --parameter "lb_subnet=c31cba83-4984-4e35-9cf4-56bc8577ff32" --parameter "member_ip1=10.0.1.11" --parameter "member_ip2=10.0.1.12"
+
+Look at the instructions in the README in this git repo for investigating the created load balancer and its parts.  
+
+
