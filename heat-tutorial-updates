@@ -44,9 +44,13 @@ PART 3: https://github.com/CFields651/osp_lbaasv2_heat_demo
 my_tenant_lbaasv2_stdalone.yaml 
   This template creates only a loadbalancer and its coresponding parts: listener, pool, members and health monitor.  It is intended to be a simples example for use in understanding how to do this with heat.  You need an existing private subnet and two instances with locak ip addresses on that subnet. 
 
-to create: openstack stack create -t  my_tenant_lbaasv2_stdalone.yaml stdalone_lbaasv2 --parameter "lb_subnet=[guid of existing subnet]" --parameter "member_ip1=[local ip of 1st instance]" --parameter "member_ip2=[local ip of 2nd instance]" 
+  to create: openstack stack create -t  my_tenant_lbaasv2_stdalone.yaml stdalone_lbaasv2 --parameter "lb_subnet=[guid of existing subnet]" --parameter "member_ip1=[local ip of 1st instance]" --parameter "member_ip2=[local ip of 2nd instance]" 
 for example: openstack stack create -t  my_tenant_lbaasv2_stdalone.yaml stdalone_lbaasv2 --parameter "lb_subnet=c31cba83-4984-4e35-9cf4-56bc8577ff32" --parameter "member_ip1=10.0.1.11" --parameter "member_ip2=10.0.1.12"
 
 Look at the instructions in the README in this git repo for investigating the created load balancer and its parts.  
 
 
+PART 4: https://github.com/CFields651/osp_lbaasv2_heat_demo
+
+my_tenant_lbaas_master.yaml
+  to create: follow instructions in the README.md.  This templates does everything we've learned about so far but uses a resource registry in my_tenant_lbaas_registry.yaml to define resources that are re-usable to create network/subnet/router/instances. It loadblances the instances it creates.  
