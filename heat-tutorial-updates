@@ -4,7 +4,11 @@ Replace heat 'stack-show'   with 'openstack stack show'
 
 PART 1: https://developer.rackspace.com/blog/openstack-orchestration-in-depth-part-1-introduction-to-heat/
 
-heat_1a: 
+#to get the code you'll need
+git clone https://github.com/miguelgrinberg/heat-tutorial.git
+
+#Heat resources
+heat_1a.yaml: 
   change version to 'heat_template_version: 2014-10-16'
   change resource attributes to:
   image to 'cirros'
@@ -12,7 +16,8 @@ heat_1a:
   change network to 'demo<your tennat number>-private1-net'
   to create:  openstack stack create -t heat_1a.yaml my_first_stack
 
-heat_1b:  
+#Heat parameters, resources and output
+heat_1b.yaml:  
   change version to 'heat_template_version: 2014-10-16'
   change input parameters to:
   image to 'cirros'
@@ -22,8 +27,9 @@ heat_1b:
 
 PART 2: https://developer.rackspace.com/blog/openstack-orchestration-in-depth-part-2-single-instance-deployments/ 
 
+#run a script with user-date throug cloud-init
 heat_2a.yaml
-  Rather than continuing to change the same default parameters let's create an input file:
+  Rather than continuing to change the same default parameters in the templates let's create an input file and submit it at the command line with -e:
 
 cat > my_input_params.yaml << EOF
 parameters:
@@ -34,23 +40,28 @@ EOF
 
   to create: openstack stack create -t heat_2a.yaml second_stack -e my_input_params.yaml  --parameter private_network=demo09-private1-net
 
-  Skip 'A real deployment' 
+For 'A real deployment' substitute the template below.  The original install an app we are not 
+interested in
 
+#create subnet, network, routers and use a wait condition
 heat_2b-mine.yaml
   to create: openstack stack create -t heat_2b-mine.yaml flasky --parameter "external_network_name=public" -e my_input_params.yaml
 
 PART 3: https://github.com/CFields651/osp_lbaasv2_heat_demo
 
+#This template creates only a loadbalancer and its coresponding parts: listener, pool, members and health monitor.  It is intended to be a simple example for use in understanding how to do this with heat.  You need an existing private subnet and two instances with locak ip addresses on that subnet. 
 my_tenant_lbaasv2_stdalone.yaml 
-  This template creates only a loadbalancer and its coresponding parts: listener, pool, members and health monitor.  It is intended to be a simple example for use in understanding how to do this with heat.  You need an existing private subnet and two instances with locak ip addresses on that subnet. 
 
   to create: openstack stack create -t  my_tenant_lbaasv2_stdalone.yaml stdalone_lbaasv2 --parameter "lb_subnet=[guid of existing subnet]" --parameter "member_ip1=[local ip of 1st instance]" --parameter "member_ip2=[local ip of 2nd instance]" 
-for example: openstack stack create -t  my_tenant_lbaasv2_stdalone.yaml stdalone_lbaasv2 --parameter "lb_subnet=c31cba83-4984-4e35-9cf4-56bc8577ff32" --parameter "member_ip1=10.0.1.11" --parameter "member_ip2=10.0.1.12"
 
-Look at the instructions in the README in this git repo for investigating the created load balancer and its parts.  
+  for example: openstack stack create -t  my_tenant_lbaasv2_stdalone.yaml stdalone_lbaasv2 --parameter "lb_subnet=c31cba83-4984-4e35-9cf4-56bc8577ff32" --parameter "member_ip1=10.0.1.11" --parameter "member_ip2=10.0.1.12"
+
+  Look at the instructions in the README in this git repo for investigating the created load balancer and its parts.  
 
 
 PART 4: https://github.com/CFields651/osp_lbaasv2_heat_demo
 
+#This templates does everything we've learned about so far but uses a resource registry in my_tenant_lbaas_registry.yaml to define resources that are re-usable to create network/subnet/router/instances. It puts the instances it creates behind a load balancer.  
 my_tenant_lbaas_master.yaml
-  to create: follow instructions in the README.md.  This templates does everything we've learned about so far but uses a resource registry in my_tenant_lbaas_registry.yaml to define resources that are re-usable to create network/subnet/router/instances. It puts the instances it creates behind a load balancer.  
+
+  to create: follow instructions in the README.md.  
